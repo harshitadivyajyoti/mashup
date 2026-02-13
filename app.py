@@ -23,6 +23,7 @@ def process_mashup(singer, n, y, output_filename="mashup.mp3"):
         'format': 'bestaudio/best',
         'noplaylist': True,
         'quiet': True,
+        'ignoreerrors': True,
         'outtmpl': 'temp_%(id)s.%(ext)s',
         'postprocessors': [{
             'key': 'FFmpegExtractAudio',
@@ -34,9 +35,19 @@ def process_mashup(singer, n, y, output_filename="mashup.mp3"):
     search_query = f"ytsearch{n}:{singer}"
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info = ydl.extract_info(search_query, download=True)
-        for entry in info.get('entries', []):
+    try:
+        info = ydl.extract_info(search_query, download=False)
+        entries = info.get('entries', [])
+    except Exception as e:
+        st.error("Search failed.")
+        return None
+
+    for entry in entries:
+        try:
+            ydl.download([entry['webpage_url']])
             downloaded_files.append(f"temp_{entry['id']}.mp3")
+        except:
+            continue  # skip failed videos
 
     if not downloaded_files:
         return None
@@ -136,3 +147,4 @@ if st.button("Generate Mashup"):
 
             with open(zip_file, "rb") as fp:
                 st.download_button("Download Zip File", fp, file_name=zip_file)
+
