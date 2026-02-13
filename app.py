@@ -35,12 +35,12 @@ def process_mashup(singer, n, y, output_filename="mashup.mp3"):
     search_query = f"ytsearch{n}:{singer}"
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-    try:
-        info = ydl.extract_info(search_query, download=False)
-        entries = info.get('entries', [])
-    except Exception as e:
-        st.error("Search failed.")
-        return None
+        try:
+            info = ydl.extract_info(search_query, download=False)
+            entries = info.get('entries', [])
+        except Exception as e:
+            st.error("Search failed.")
+            return None
 
     for entry in entries:
         try:
@@ -147,4 +147,5 @@ if st.button("Generate Mashup"):
 
             with open(zip_file, "rb") as fp:
                 st.download_button("Download Zip File", fp, file_name=zip_file)
+
 
